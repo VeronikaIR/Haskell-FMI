@@ -1,1 +1,103 @@
+import Data.Char
+import Data.List
 
+main :: IO()
+main = do
+         
+        --task 01
+        print (applyEveryKth (* 2) 3 [1..6])
+        print (applyEveryKth (+ 2) 4 [1..7])
+        --task 02
+        print $ (speak "gate") 't'
+        print $ (speak "This is a test") 'i'
+        print $ (speak "iiiiiii") 'i'
+        print $ (speak "This is another test that has more words") 'a'
+        --task 03
+        print (cook [ApplePie, ApplePie, Burger, Chicken, Chicken, ApplePie])
+        print (cook [ApplePie, Burger, Chicken, Chicken, ApplePie, Burger])
+        --task 04
+        print (deepestNodesSum odd t1)
+        print (deepestNodesSum even t2)
+
+--task 01
+
+applyEveryKth :: (a -> a) -> Int -> [a] -> [a]
+applyEveryKth f n xs = [if (i `mod` n == 0) then (f x) else x| (i,x) <-zip [1..] xs]
+
+--task 02
+
+speak :: String -> (Char -> String)
+speak str = (\c -> (returnNewStr str c))
+
+returnNewStr :: String -> Char -> String
+returnNewStr str c = helper str c []
+   where
+       helper str c zs
+            | null str = reverse $ zs
+            | c == (head str) = helper (tail str) c ((convertNumber (tail str) )++ zs)
+            | otherwise = helper (tail str) c ((head str):zs)
+
+convertNumber :: String -> String
+convertNumber str = helper (length str) []
+    where
+        helper l zs
+            | l < 10 = reverse(intToDigit(l):zs)
+            | otherwise = helper (l `div` 10) (intToDigit(l `mod` 10):zs)
+
+--task 03
+
+data Weather = Sunny | Rainy
+    deriving (Show, Read)
+
+data Meals = ApplePie | Burger | Chicken
+    deriving (Show, Read, Eq)
+
+cook :: [Meals] -> [Weather]
+cook xs = helper xs []
+    where
+        helper xs zs
+            | (length xs == 1) = reverse $ zs
+            | ((head xs) == (head(tail xs))) = helper (tail xs) ((Sunny):zs)
+            | otherwise = helper (tail xs) ((Rainy):zs)
+
+{-
+създавам изборителния алгебричен тип Weather (името на алгебричния тип) за да се предложат възможните типове за време
+представени, като са представени чрез конструкторите Sunny | Rainy, като в този случай като подадем на функцията списък от време ([Weather])
+означава, че в този списък съдържа само елементи, които са изброени от конструкторите на алгебричния тип Weather
+
+изброителният алгебричен тип Meals е за да се предложат възможите типове за храна, 
+като са представени чрез конструкторите ApplePie | Burger | Chicken, като в този случай като подадем на функцията списък от храни ([Meals])
+означава, че в този списък съдържа само елементи, които са изброени от конструкторите на алгебричния тип Meals
+-}
+
+-- task 04
+
+data BTree = Empty | Node Int BTree BTree
+
+t1 :: BTree
+t1 = Node 1 (Node 2 (Node 4 (Node 7 Empty Empty) 
+                                          Empty)
+                           (Node 5 Empty Empty)) 
+                           (Node 3 Empty
+                   (Node 6 Empty
+                       (Node 8 Empty Empty)))
+
+t2 :: BTree
+t2 = Node 1 (Node 2 (Node 4 Empty Empty)
+                    Empty) 
+                    (Node 3 Empty Empty)
+
+deepestNodesSum :: (Int -> Bool) -> BTree -> Int
+deepestNodesSum p bt = (levelSum p bt)
+
+levelSum :: (Int -> Bool) -> BTree -> Int
+levelSum p bt = sum [n | n <- (getLevel bt (height bt)), p n ]
+
+getLevel :: BTree -> Int -> [Int]
+getLevel Empty _ = []
+getLevel (Node v Empty Empty) 1 = [v]
+getLevel (Node v lt rt) k = (getLevel lt (k-1))++(getLevel rt(k-1))
+
+height :: BTree -> Int
+height Empty = 0
+height (Node v lt rt) = 1 + max (height lt) (height rt)
